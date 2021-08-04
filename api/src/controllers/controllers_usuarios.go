@@ -1,12 +1,53 @@
 package controllers
 
 import (
+	"api/src/banco"
+	modelos "api/src/models"
+	"api/src/repositorios"
+	respostas "api/src/resposta"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
 // PostUsuarios insere usuarios no banco
 func PostUsuarios(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Criando usuarios"))
+	corpoRequest, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
+
+	}
+
+	var usuario modelos.Usuario
+
+	erro = json.Unmarshal(corpoRequest, &usuario)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+
+	}
+
+	erro = usuario.Preparar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuario.ID, erro = repositorio.Criar(usuario)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+
+	}
+	respostas.JSON(w, http.StatusCreated, usuario)
 }
 
 //GetUsuarios busca por todos usuarios no banco
