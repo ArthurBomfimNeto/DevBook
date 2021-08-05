@@ -1,9 +1,11 @@
 package controllers
 
 import (
-	"api/src/banco"
+	//"api/src/banco"
 	modelos "api/src/models"
-	"api/src/repositorios"
+	"fmt"
+
+	//"api/src/repositorios"
 	respostas "api/src/resposta"
 	"encoding/json"
 	"io/ioutil"
@@ -13,22 +15,25 @@ import (
 // PostUsuarios insere usuarios no banco
 func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 	corpoRequest, erro := ioutil.ReadAll(r.Body)
+	fmt.Println(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
 		return
 
 	}
 
-	var usuario modelos.Usuario
+	var usuario []modelos.Usuario
 
 	erro = json.Unmarshal(corpoRequest, &usuario)
+	erro = json.NewEncoder(w).Encode(usuario)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
-
 	}
 
-	erro = usuario.Preparar()
+	fmt.Println(usuario[1])
+
+	/*erro = usuario.Preparar()
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 	}
@@ -47,7 +52,7 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	respostas.JSON(w, http.StatusCreated, usuario)
+	respostas.JSON(w, http.StatusCreated, usuario)*/
 }
 
 //GetUsuarios busca por todos usuarios no banco
