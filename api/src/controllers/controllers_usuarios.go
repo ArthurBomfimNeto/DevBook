@@ -2,8 +2,11 @@ package controllers
 
 import (
 	//"api/src/banco"
+	"api/src/banco"
 	modelos "api/src/models"
+	"api/src/repositorios"
 	"fmt"
+	"strings"
 
 	//"api/src/repositorios"
 	respostas "api/src/resposta"
@@ -22,18 +25,16 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	var usuario []modelos.Usuario
+	var usuario modelos.Usuario
 
 	erro = json.Unmarshal(corpoRequest, &usuario)
-	erro = json.NewEncoder(w).Encode(usuario)
+
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
 
-	fmt.Println(usuario[1])
-
-	/*erro = usuario.Preparar()
+	erro = usuario.Preparar()
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 	}
@@ -52,12 +53,28 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	respostas.JSON(w, http.StatusCreated, usuario)*/
+	erro = json.NewEncoder(w).Encode(usuario)
+	respostas.JSON(w, http.StatusCreated, usuario)
 }
 
 //GetUsuarios busca por todos usuarios no banco
 func GetUsuarios(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Buscando todos usuarios"))
+	nomeOuNick := strings.ToLower(r.URL.Query().Get("usuario"))
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusServiceUnavailable, erro)
+	}
+
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuarios, erro := repositorio.Buscar(nomeOuNick)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, usuarios)
 }
 
 //GetUsuario busca por um usuario no banco

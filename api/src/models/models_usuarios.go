@@ -6,19 +6,13 @@ import (
 	"time"
 )
 
-type Cordenada struct {
-	Longitude string `json: "longitude"`
-	Latitude  string `json: "latitude"`
-}
-
 type Usuario struct {
-	ID        uint64    `json: "id,omitempty"` // omit empty caso for passar para json e o id estiver em branco elenão vai passar
-	Nome      string    `json: "nome,omitempty"`
-	Nick      string    `json: "nick,omitempty"`
-	Email     string    `json: "email,omitempty"`
-	Senha     string    `json: "senha,omitempty"`
-	CriadoEm  time.Time `json: "Criadoem,omitempty"`
-	Cordenada Cordenada `json: "cordenada"`
+	ID       uint64    `json: "id,omitempty"` // omit empty caso for passar para json e o id estiver em branco elenão vai passar
+	Nome     string    `json: "nome,omitempty"`
+	Nick     string    `json: "nick,omitempty"`
+	Email    string    `json: "email,omitempty"`
+	Senha    string    `json: "senha,omitempty"`
+	CriadoEm time.Time `json: "Criadoem,omitempty"`
 }
 
 func (u *Usuario) Preparar() error {
