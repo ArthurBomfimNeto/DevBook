@@ -14,7 +14,8 @@ func NovoRepositorioDeUsuarios(db *sql.DB) *usuarios {
 	return &usuarios{db}
 }
 
-func (repositorio usuarios) Criar(usuario modelos.Usuario) (uint64, error) {
+//Criar insere um usuario no banco de dados
+func (repositorio usuarios) CriarUser(usuario modelos.Usuario) (uint64, error) {
 	stmt, erro := repositorio.db.Prepare("insert into usuarios(nome, nick, email, senha) values (?,?,?,?)")
 	if erro != nil {
 		return 0, erro
@@ -34,15 +35,13 @@ func (repositorio usuarios) Criar(usuario modelos.Usuario) (uint64, error) {
 	return uint64(ultimoIDinserido), nil
 }
 
-func (repositorio usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error) {
-
+//Buscar traz todos os usuarios que atendem a um filtro
+func (repositorio usuarios) BuscarUser(nomeOuNick string) ([]modelos.Usuario, error) {
+	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick)
 	linhas, erro := repositorio.db.Query(
-		"select id, nome, nick, email, criadoEm from usuarios where nome = ? or nick = ?",
-		nomeOuNick,
-		nomeOuNick,
-	)
+		"select id, nome, nick, email, criadoEm from usuarios where nome like ? or nick like ?",
+		nomeOuNick, nomeOuNick)
 	if erro != nil {
-		fmt.Println("ENTROU AQUI")
 		return nil, erro
 	}
 
@@ -68,4 +67,64 @@ func (repositorio usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error)
 
 	}
 	return usuarios, nil
+}
+
+//Buscar_Id traz um usuario do banco de dados
+func (repositorio usuarios) BuscarUserId(id uint64) (modelos.Usuario, error) {
+
+	linha, erro := repositorio.db.Query("select id, nome, nick, email, criadoEm from usuarios where id = ?", id)
+	if erro != nil {
+		return modelos.Usuario{}, erro
+	}
+
+	defer linha.Close()
+
+	var usuario modelos.Usuario
+	if linha.Next() {
+		erro = linha.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		)
+		if erro != nil {
+			return modelos.Usuario{}, erro
+		}
+	}
+	return usuario, erro
+}
+
+func (repositorio usuarios) AtualizarUser(usuario modelos.Usuario, id uint64) error {
+	stmt, erro := repositorio.db.Prepare("update usuarios set nome = ?, nick = ?, email = ? where id = ?")
+	if erro != nil {
+		return erro
+	}
+
+	defer stmt.Close()
+
+	_, erro = stmt.Exec(usuario.Nome, usuario.Nick, usuario.Email, id)
+	if erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+//Deletar exclui as informações de um usuario no banco
+func (repositorio usuarios) DeletarUser(id uint64) error {
+	stmt, erro := repositorio.db.Prepare("delete from usuarios where id = ?")
+	if erro != nil {
+		return erro
+	}
+
+	defer stmt.Close()
+
+	_, erro = stmt.Exec(id)
+	if erro != nil {
+		return erro
+	}
+
+	return nil
+
 }
