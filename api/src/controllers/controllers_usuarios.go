@@ -5,7 +5,7 @@ import (
 	"api/src/banco"
 	modelos "api/src/models"
 	"api/src/repositorios"
-	"fmt"
+	"strconv"
 	"strings"
 
 	//"api/src/repositorios"
@@ -13,12 +13,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // PostUsuarios insere usuarios no banco
 func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 	corpoRequest, erro := ioutil.ReadAll(r.Body)
-	fmt.Println(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
 		return
@@ -34,9 +35,10 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	erro = usuario.Preparar()
+	erro = usuario.Preparar("cadastro")
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
 	}
 
 	db, erro := banco.Conectar()
@@ -47,13 +49,12 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuario.ID, erro = repositorio.Criar(usuario)
+	usuario.ID, erro = repositorio.CriarUser(usuario)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
 
 	}
-	erro = json.NewEncoder(w).Encode(usuario)
 	respostas.JSON(w, http.StatusCreated, usuario)
 }
 
@@ -63,12 +64,13 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 	db, erro := banco.Conectar()
 	if erro != nil {
 		respostas.Erro(w, http.StatusServiceUnavailable, erro)
+		return
 	}
 
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuarios, erro := repositorio.Buscar(nomeOuNick)
+	usuarios, erro := repositorio.BuscarUser(nomeOuNick)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
@@ -79,15 +81,94 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 
 //GetUsuario busca por um usuario no banco
 func GetUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Buscando um usuario"))
+	parametros := mux.Vars(r)
+	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuario, erro := repositorio.BuscarUserId(id)
+
+	respostas.JSON(w, http.StatusOK, usuario)
+
 }
 
 //PutUsuario atualiza um usuario no banco
 func PutUsuarios(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Atualizando um usuario"))
+	corpoRequest, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
+	}
+
+	var usuario modelos.Usuario
+
+	erro = json.Unmarshal(corpoRequest, &usuario)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	parametros := mux.Vars(r)
+	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	erro = usuario.Preparar("edicao")
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	erro = repositorio.AtualizarUser(usuario, id)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
 
 //DeleteUsuario deleta um usuario no banco
 func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Deletando um usuario"))
+	parametros := mux.Vars(r)
+
+	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	erro = repositorio.DeletarUser(id)
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
