@@ -4,19 +4,21 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/badoux/checkmail"
 )
 
 type Usuario struct {
-	ID       uint64    `json: "id,omitempty"` // omit empty caso for passar para json e o id estiver em branco elenão vai passar
-	Nome     string    `json: "nome,omitempty"`
-	Nick     string    `json: "nick,omitempty"`
-	Email    string    `json: "email,omitempty"`
-	Senha    string    `json: "senha,omitempty"`
-	CriadoEm time.Time `json: "Criadoem,omitempty"`
+	ID       uint64    `json:"id,omitempty"` // omit empty caso for passar para json e o id estiver em branco elenão vai passar
+	Nome     string    `json:"nome,omitempty"`
+	Nick     string    `json:"nick,omitempty"`
+	Email    string    `json:"email,omitempty"`
+	Senha    string    `json:"senha,omitempty"`
+	CriadoEm time.Time `json:"Criadoem,omitempty"`
 }
 
-func (u *Usuario) Preparar() error {
-	if erro := u.validar(); erro != nil {
+func (u *Usuario) Preparar(etapa string) error {
+	if erro := u.validar(etapa); erro != nil {
 		return erro
 	}
 
@@ -24,7 +26,7 @@ func (u *Usuario) Preparar() error {
 	return nil
 }
 
-func (u *Usuario) validar() error {
+func (u *Usuario) validar(etapa string) error {
 	if u.Nome == "" {
 		return errors.New("O nome é obrigatório!")
 	}
@@ -34,8 +36,12 @@ func (u *Usuario) validar() error {
 	if u.Email == "" {
 		return errors.New("O email é obrigatorio!")
 	}
-	if u.Senha == "" {
-		return errors.New("O senha é obrigatorio!")
+
+	if erro := checkmail.ValidateFormat(u.Email); erro != nil {
+		return errors.New("O email inserido é invalido, digite novamente!")
+	}
+	if etapa == "cadastro" && u.Senha == "" {
+		return errors.New("A senha é obrigatorio!")
 	}
 	return nil
 }
