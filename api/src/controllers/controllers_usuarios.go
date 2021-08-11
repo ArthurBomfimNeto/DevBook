@@ -19,7 +19,7 @@ import (
 
 // PostUsuarios insere usuarios no banco
 func PostUsuarios(w http.ResponseWriter, r *http.Request) {
-	corpoRequest, erro := ioutil.ReadAll(r.Body)
+	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
 		return
@@ -28,7 +28,7 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 
 	var usuario modelos.Usuario
 
-	erro = json.Unmarshal(corpoRequest, &usuario)
+	erro = json.Unmarshal(corpoRequisicao, &usuario)
 
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
@@ -104,7 +104,7 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
 
 //PutUsuario atualiza um usuario no banco
 func PutUsuarios(w http.ResponseWriter, r *http.Request) {
-	corpoRequest, erro := ioutil.ReadAll(r.Body)
+	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
 		return
@@ -112,7 +112,7 @@ func PutUsuarios(w http.ResponseWriter, r *http.Request) {
 
 	var usuario modelos.Usuario
 
-	erro = json.Unmarshal(corpoRequest, &usuario)
+	erro = json.Unmarshal(corpoRequisicao, &usuario)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
