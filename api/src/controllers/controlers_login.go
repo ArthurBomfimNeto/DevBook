@@ -26,7 +26,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
-
+	// USE CASE
 	db, erro := banco.Conectar()
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
@@ -47,9 +47,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// w.Write([]byte("Usuario logado!"))
-
+	// USE CASE
 	token, _ := autenticacao.CriarToken(fmt.Sprint(usuarioDobanco.ID))
 	w.Write([]byte(token))
-	w.Write([]byte("\nToken gerado"))
-
 }
