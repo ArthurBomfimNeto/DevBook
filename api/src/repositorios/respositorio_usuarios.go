@@ -205,3 +205,72 @@ func (repositorio usuarios) BuscarSeguidores(usuarioID uint64) ([]modelos.Usuari
 	}
 	return usuarios, nil
 }
+
+func (repositorio usuarios) BuscaQuemSegue(usuarioId uint64) ([]modelos.Usuario, error) {
+	stmt, erro := repositorio.db.Prepare(
+		"select u.id, u.nome, u.nick, u.email, u.criadoEm from usuarios u inner join seguidores s on u.id = s.usuario_id where seguidor_id =?")
+	if erro != nil {
+		return []modelos.Usuario{}, erro
+	}
+
+	rows, erro := stmt.Query(usuarioId)
+	if erro != nil {
+		return []modelos.Usuario{}, erro
+	}
+
+	var usuarios []modelos.Usuario
+
+	for rows.Next() {
+		var usuario modelos.Usuario
+
+		erro = rows.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+		)
+		if erro != nil {
+			return []modelos.Usuario{}, erro
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+	return usuarios, nil
+
+}
+
+func (repositorio usuarios) BuscarSenha(usuarioId uint64) (string, error) {
+	row, erro := repositorio.db.Query("select senha from usuarios where id = ?", usuarioId)
+	if erro != nil {
+		return "", erro
+	}
+
+	defer row.Close()
+
+	var usuario modelos.Usuario
+
+	if row.Next() {
+		erro = row.Scan(
+			&usuario.Senha,
+		)
+		if erro != nil {
+			return "", erro
+		}
+	}
+	return usuario.Senha, nil
+}
+
+func (repositorio usuarios) AtualizarSenha(usuarioId uint64, senhaComHash string) error {
+	stmt, erro := repositorio.db.Prepare("update usuarios set senha = ? where id = ?")
+	if erro != nil {
+		return erro
+	}
+
+	_, erro = stmt.Exec(senhaComHash, usuarioId)
+	if erro != nil {
+		return erro
+	}
+
+	return nil
+}

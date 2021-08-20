@@ -12,4 +12,7 @@ type UsuarioRepository interface {
 	Seguir(usuarioID, seguidorID uint64) error
 	ParaDeSeguir(usuarioID, seguidorID uint64) error
 	BuscarSeguidores(usuarioID uint64) ([]modelos.Usuario, error)
+	BuscaQuemSegue(usuarioId uint64) ([]modelos.Usuario, error)
+	BuscarSenha(usuarioId uint64) (string, error)
+	AtualizarSenha(usuarioId uint64, senhaComHash string) error
 }

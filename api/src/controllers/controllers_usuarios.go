@@ -1,17 +1,15 @@
 package controllers
 
 import (
-	//"api/src/banco"
-
 	"api/src/autenticacao"
 	"api/src/banco"
 	modelos "api/src/models"
 	"api/src/repositorios"
+	"api/src/seguranca"
 	"errors"
 	"strconv"
 	"strings"
 
-	//"api/src/repositorios"
 	respostas "api/src/resposta"
 	"encoding/json"
 	"io/ioutil"
@@ -293,4 +291,96 @@ func GetSeguidores(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusOK, seguidores)
+}
+
+func GetQuemSegue(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+	}
+
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuarios, erro := repositorio.BuscaQuemSegue(usuarioId)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+	}
+
+	respostas.JSON(w, http.StatusOK, usuarios)
+}
+
+func PutSenha(w http.ResponseWriter, r *http.Request) {
+	usuarioIdToken, erro := autenticacao.ExtrairusarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	parametros := mux.Vars(r)
+	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	if usuarioId != usuarioIdToken {
+		respostas.Erro(w, http.StatusForbidden, errors.New("Não é possivél atualizar uma senha que não seja a sua!"))
+		return
+	}
+
+	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	var senha modelos.Senha
+
+	erro = json.Unmarshal(corpoRequisicao, &senha)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	defer db.Close()
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	senhaSalvanoBanco, erro := repositorio.BuscarSenha(usuarioId)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	erro = seguranca.VerificarSenha(senha.Atual, senhaSalvanoBanco)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, errors.New("A senha atual não condiz com as que esta salva no banco"))
+		return
+	}
+
+	senhaComHash, erro := seguranca.Hash(senha.Nova)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	erro = repositorio.AtualizarSenha(usuarioId, string(senhaComHash))
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
 }
