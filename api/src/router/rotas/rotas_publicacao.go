@@ -7,33 +7,51 @@ import (
 
 var rotasPublicacao = []Rota{
 	{
-		URI:                "/publicacao",
+		URI:                "/publicacoes",
 		Metodo:             http.MethodPost,
 		Funcao:             controllers.PostPublicacao,
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/publicacao",
+		URI:                "/publicacoes",
 		Metodo:             http.MethodGet,
 		Funcao:             controllers.GetPublicacoes,
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/publicacao/{publicacaoId}",
+		URI:                "/publicacoes/{publicacaoId}",
 		Metodo:             http.MethodGet,
 		Funcao:             controllers.GetPublicacaoId,
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/publicacao/{publicacaoId}",
+		URI:                "/publicacoes/{publicacaoId}",
 		Metodo:             http.MethodPut,
 		Funcao:             controllers.PutPublicacao,
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/publicacao/{publicacaoId}",
+		URI:                "/publicacoes/{publicacaoId}",
 		Metodo:             http.MethodDelete,
 		Funcao:             controllers.DeletePublicacao,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/usuarios/{usuarioId}/publicacoes",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.GetPublicacaoUsuario,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/publicacoes/{publicacaoId}/curtir",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.PostCurtida,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/publicacoes/{publicacaoId}/descutir",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.PostCurtida,
 		RequerAutenticacao: true,
 	},
 }
