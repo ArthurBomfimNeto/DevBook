@@ -10,4 +10,5 @@ type PublicacaoRepository interface {
 	DeletarPublicacao(publicacaoID uint64) error
 	BuscarPublicacoesUsuario(usuarioID uint64) ([]modelos.Publicacao, error)
 	Curtir(publicacaoID uint64) error
+	Descurtir(publicacaoID uint64) error
 }
