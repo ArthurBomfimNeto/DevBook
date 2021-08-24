@@ -51,7 +51,7 @@ var rotasPublicacao = []Rota{
 	{
 		URI:                "/publicacoes/{publicacaoId}/descutir",
 		Metodo:             http.MethodPost,
-		Funcao:             controllers.PostCurtida,
+		Funcao:             controllers.DeleteCurtida,
 		RequerAutenticacao: true,
 	},
 }
