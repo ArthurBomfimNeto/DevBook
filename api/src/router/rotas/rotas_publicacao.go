@@ -49,7 +49,7 @@ var rotasPublicacao = []Rota{
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/publicacoes/{publicacaoId}/descutir",
+		URI:                "/publicacoes/{publicacaoId}/descurtir",
 		Metodo:             http.MethodPost,
 		Funcao:             controllers.DeleteCurtida,
 		RequerAutenticacao: true,

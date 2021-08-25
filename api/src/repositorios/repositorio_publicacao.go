@@ -202,7 +202,12 @@ func (repositorio publicacoes) Curtir(publicacaoID uint64) error {
 
 func (repositorio publicacoes) Descurtir(publicacaoID uint64) error {
 	stmt, erro := repositorio.db.Prepare(
-		`update publicacao set curtida = curtida - 1 where id = ?`)
+		`update publicacoes set curtidas = 
+		 CASE 
+		 	WHEN curtidas > 0 THEN curtidas - 1
+		 	ELSE 0 END
+		 where id = ?
+		`)
 	if erro != nil {
 		return erro
 	}
