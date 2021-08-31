@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"webapp/src/config"
+	"webapp/src/cookies"
 	"webapp/src/router"
 	"webapp/src/utils"
 )
 
 func init() {
+	config.Carregar()
+	cookies.ConfigurarCookie()
 	utils.CarregarTemplates()
 }
 
 func main() {
-
 	r := router.Gerar()
 
-	fmt.Println("Escutando na porta 3000")
-	log.Fatal(http.ListenAndServe(":3000", r))
+	fmt.Println(fmt.Sprintf("Escutando na porta %v\n", config.Porta))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", config.Porta), r))
 }

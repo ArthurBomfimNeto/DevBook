@@ -1,8 +1,7 @@
 $('#formulario-cadastro').on("submit", criarUsuario)
 
 function criarUsuario(evento) {
-    evento.preventDefault()
-    console.log("Dentro da funct ")
+    evento.preventDefault()  // previni o comportamento default de carregar a pagina automatica do formulario
 
     if ($('#senha').val() != $('#confirmar-senha').val()) {
         alert('As senhas não conhecidem')
@@ -17,7 +16,12 @@ function criarUsuario(evento) {
             nome : $('#nome').val(),
             email : $('#email').val(),
             nick : $('#nick').val(),
-            senha : $('#senha').val(),
+            senha : $('#senha').val()
         }
-    })
+    }).done(function(){ // executa quando o status da api retornar 200, 201, 204 status de sucesso
+        alert("Usuario cadastrado com sucesso!")
+    }).fail(function(erro) { // executa quando o status 400 404 401 403 500
+        console.log(erro)
+        alert("Erro ao cadastrar!")
+    });
 }

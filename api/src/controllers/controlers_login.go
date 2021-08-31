@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
+
 	// USE CASE
 	db, erro := banco.Conectar()
 	if erro != nil {
@@ -48,6 +50,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// w.Write([]byte("Usuario logado!"))
 	// USE CASE
-	token, _ := autenticacao.CriarToken(fmt.Sprint(usuarioDobanco.ID))
-	w.Write([]byte(token))
+	token, erro := autenticacao.CriarToken(fmt.Sprint(usuarioDobanco.ID))
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	usuarioID := strconv.FormatUint(usuarioDobanco.ID, 10)
+
+	respostas.JSON(w, http.StatusOK, modelos.DadosAutenticacao{ID: usuarioID, Token: token})
 }

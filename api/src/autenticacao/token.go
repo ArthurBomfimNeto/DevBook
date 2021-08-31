@@ -33,7 +33,7 @@ func ValidarToken(r *http.Request) error {
 		return erro
 	}
 
-	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid { // transfroma a spermissoes em Map
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid { // transfroma as permissoes em Map
 		return nil
 	}
 	return errors.New("Token inavalido")
