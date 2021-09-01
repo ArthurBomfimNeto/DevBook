@@ -38,3 +38,22 @@ func Salvar(w http.ResponseWriter, ID, token string) error {
 
 	return nil
 }
+
+func Ler(r *http.Request) (map[string]string, error) {
+	// pega o map do cookie id e token
+	cookie, erro := r.Cookie("dados")
+	if erro != nil {
+		return nil, erro
+	}
+
+	// descodificação dos campos
+
+	valores := make(map[string]string)
+
+	erro = s.Decode("dados", cookie.Value, &valores)
+	if erro != nil {
+		return nil, erro
+	}
+	//map com os valores decodificado
+	return valores, nil
+}
