@@ -24,8 +24,6 @@ func FazerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(bytes.NewBuffer(usuario)) // transforma o slice de bytes em json legivel
-
 	url := fmt.Sprintf("%v/login", config.APIURL)
 	response, erro := http.Post(url, "application/json", bytes.NewBuffer(usuario))
 	if erro != nil {
@@ -41,7 +39,7 @@ func FazerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var DadosAutenticacao modelos.DadosAutenticacao
-	erro = json.NewDecoder(response.Body).Decode(&DadosAutenticacao) // recebe um json de decodifica ele para um struct e afins
+	erro = json.NewDecoder(response.Body).Decode(&DadosAutenticacao) // recebe um json e decodifica ele para um struct e afins
 	if erro != nil {
 		respostas.JSON(w, http.StatusUnprocessableEntity, respostas.ErroAPI{Erro: erro.Error()})
 	}
