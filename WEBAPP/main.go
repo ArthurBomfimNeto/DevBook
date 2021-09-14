@@ -11,9 +11,9 @@ import (
 )
 
 func init() {
-	config.Carregar()
+	config.Carregar() //Carrega as variaveis de ambiente
 	cookies.ConfigurarCookie()
-	utils.CarregarTemplates()
+	utils.CarregarTemplates() // carrega todos os templates
 }
 
 func main() {
