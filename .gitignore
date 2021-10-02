@@ -1,3 +1,5 @@
 *.env
 sql
 .vscode
+go.sum
+.scannerwork

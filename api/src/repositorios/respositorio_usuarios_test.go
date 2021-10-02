@@ -22,3 +22,7 @@ func TestCriarUser(t *testing.T) {
 		assert.Error(t, erro)
 	})
 }
+
+func TestBuscaUsuarioId(t *testing.T) {
+
+}
