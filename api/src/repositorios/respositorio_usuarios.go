@@ -29,7 +29,7 @@ func (repositorio usuarios) CriarUser(usuario modelos.Usuario) (uint64, error) {
 	}
 
 	ultimoIDinserido, erro := result.LastInsertId()
-	if erro != nil {
+	if ultimoIDinserido == 0 {
 		return 0, erro
 	}
 
@@ -43,7 +43,7 @@ func (repositorio usuarios) BuscarUser(nomeOuNick string) ([]modelos.Usuario, er
 		"select id, nome, nick, email, criadoEm from usuarios where nome like ? or nick like ?",
 		nomeOuNick, nomeOuNick)
 	if erro != nil {
-		return nil, erro
+		return []modelos.Usuario{}, erro
 	}
 
 	defer linhas.Close()
@@ -61,7 +61,7 @@ func (repositorio usuarios) BuscarUser(nomeOuNick string) ([]modelos.Usuario, er
 		)
 		if erro != nil {
 
-			return nil, erro
+			return []modelos.Usuario{}, erro
 		}
 
 		usuarios = append(usuarios, usuario)
