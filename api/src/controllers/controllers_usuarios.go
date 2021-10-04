@@ -6,6 +6,7 @@ import (
 	modelos "api/src/models"
 	"api/src/repositorios"
 	"api/src/seguranca"
+	usecase "api/src/usecases"
 	"errors"
 	"strconv"
 	"strings"
@@ -19,7 +20,7 @@ import (
 )
 
 // PostUsuarios insere usuarios no banco
-func PostUsuarios(w http.ResponseWriter, r *http.Request) {
+func CriarUser(w http.ResponseWriter, r *http.Request) {
 	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
@@ -50,7 +51,8 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuario.ID, erro = repositorio.CriarUser(usuario)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	usuario.ID, erro = usecase.CriarUser(usuario)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
@@ -60,7 +62,7 @@ func PostUsuarios(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetUsuarios busca por todos usuarios no banco
-func GetUsuarios(w http.ResponseWriter, r *http.Request) {
+func BuscarUser(w http.ResponseWriter, r *http.Request) {
 	nomeOuNick := strings.ToLower(r.URL.Query().Get("usuario"))
 	db, erro := banco.Conectar()
 	if erro != nil {
@@ -71,7 +73,8 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuarios, erro := repositorio.BuscarUser(nomeOuNick)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	usuarios, erro := usecase.BuscarUser(nomeOuNick)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
@@ -81,7 +84,7 @@ func GetUsuarios(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetUsuario busca por um usuario no banco
-func GetUsuario(w http.ResponseWriter, r *http.Request) {
+func BuscarUserId(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -97,14 +100,19 @@ func GetUsuario(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuario, erro := repositorio.BuscarUserId(id)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	usuario, erro := usecase.BuscarUserId(id)
+	if erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
 
 	respostas.JSON(w, http.StatusOK, usuario)
 
 }
 
 //PutUsuario atualiza um usuario no banco
-func PutUsuarios(w http.ResponseWriter, r *http.Request) {
+func AtualizarUser(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -161,7 +169,7 @@ func PutUsuarios(w http.ResponseWriter, r *http.Request) {
 }
 
 //DeleteUsuario deleta um usuario no banco
-func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
+func DeletarUser(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
 	id, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
@@ -195,7 +203,7 @@ func DeleteUsuario(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
 
-func PostSeguidor(w http.ResponseWriter, r *http.Request) {
+func Seguir(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	usuarioID, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -232,7 +240,7 @@ func PostSeguidor(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func DeleteSeguidor(w http.ResponseWriter, r *http.Request) {
+func ParaDeSeguir(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	usuarioID, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -267,7 +275,7 @@ func DeleteSeguidor(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
 
-func GetSeguidores(w http.ResponseWriter, r *http.Request) {
+func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	usuarioID, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -293,7 +301,7 @@ func GetSeguidores(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusOK, seguidores)
 }
 
-func GetQuemSegue(w http.ResponseWriter, r *http.Request) {
+func BuscaQuemSegue(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	usuarioId, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
 	if erro != nil {
@@ -316,7 +324,7 @@ func GetQuemSegue(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusOK, usuarios)
 }
 
-func PutSenha(w http.ResponseWriter, r *http.Request) {
+func BuscarSenha(w http.ResponseWriter, r *http.Request) {
 	usuarioIdToken, erro := autenticacao.ExtrairusarioID(r)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnauthorized, erro)

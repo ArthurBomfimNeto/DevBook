@@ -16,7 +16,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func PostPublicacao(w http.ResponseWriter, r *http.Request) {
+func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 	usuarioID, erro := autenticacao.ExtrairusarioID(r)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnauthorized, erro)
@@ -62,7 +62,7 @@ func PostPublicacao(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusCreated, publicacao)
 
 }
-func GetPublicacoes(w http.ResponseWriter, r *http.Request) {
+func BuscarPublicacoes(w http.ResponseWriter, r *http.Request) {
 	usuarioID, erro := autenticacao.ExtrairusarioID(r)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnauthorized, erro)
@@ -87,7 +87,7 @@ func GetPublicacoes(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusOK, publicacoes)
 
 }
-func GetPublicacaoId(w http.ResponseWriter, r *http.Request) {
+func BuscarPublicacaoID(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	publicacaoId, erro := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
 	if erro != nil {
@@ -113,7 +113,7 @@ func GetPublicacaoId(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusOK, publicacao)
 
 }
-func PutPublicacao(w http.ResponseWriter, r *http.Request) {
+func AtualizarPublicacao(w http.ResponseWriter, r *http.Request) {
 	publicacaoIDToken, erro := autenticacao.ExtrairusarioID(r)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnauthorized, erro)
@@ -170,7 +170,7 @@ func PutPublicacao(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusNoContent, nil)
 
 }
-func DeletePublicacao(w http.ResponseWriter, r *http.Request) {
+func DeletarPublicacao(w http.ResponseWriter, r *http.Request) {
 	publicacaoIDToken, erro := autenticacao.ExtrairusarioID(r)
 	if erro != nil {
 		respostas.Erro(w, http.StatusUnauthorized, erro)
@@ -210,7 +210,7 @@ func DeletePublicacao(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetPublicacaoUsuario(w http.ResponseWriter, r *http.Request) {
+func BuscarPublicacoesUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
 	usuarioID, erro := strconv.ParseUint(parametros["usuarioId"], 10, 64)
@@ -238,7 +238,7 @@ func GetPublicacaoUsuario(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func PostCurtida(w http.ResponseWriter, r *http.Request) {
+func Curtir(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	publicacaoID, erro := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
 	if erro != nil {
@@ -261,7 +261,7 @@ func PostCurtida(w http.ResponseWriter, r *http.Request) {
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
 
-func DeleteCurtida(w http.ResponseWriter, r *http.Request) {
+func Descurtir(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 	publicacaoID, erro := strconv.ParseUint(parametros["publicacaoId"], 10, 64)
 	if erro != nil {
