@@ -5,7 +5,6 @@ import (
 	"api/src/banco"
 	modelos "api/src/models"
 	"api/src/repositorios"
-	"api/src/seguranca"
 	usecase "api/src/usecases"
 	"errors"
 	"strconv"
@@ -159,7 +158,8 @@ func AtualizarUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	erro = repositorio.AtualizarUser(usuario, id)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	erro = usecase.AtualizarUser(usuario, id)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
@@ -198,7 +198,12 @@ func DeletarUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	erro = repositorio.DeletarUser(id)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	erro = usecase.DeletarUser(id)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
 }
@@ -231,7 +236,8 @@ func Seguir(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	erro = repositorio.Seguir(usuarioID, seguidorID)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	erro = usecase.Seguir(usuarioID, seguidorID)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 	}
@@ -267,7 +273,8 @@ func ParaDeSeguir(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	erro = repositorio.ParaDeSeguir(usuarioID, seguidorID)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	erro = usecase.ParaDeSeguir(usuarioID, seguidorID)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 	}
@@ -292,7 +299,8 @@ func BuscarSeguidores(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	seguidores, erro := repositorio.BuscarSeguidores(usuarioID)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	seguidores, erro := usecase.BuscarSeguidores(usuarioID)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
@@ -316,7 +324,8 @@ func BuscaQuemSegue(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	usuarios, erro := repositorio.BuscaQuemSegue(usuarioId)
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	usuarios, erro := usecase.BuscaQuemSegue(usuarioId)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 	}
@@ -366,25 +375,8 @@ func BuscarSenha(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
-	senhaSalvanoBanco, erro := repositorio.BuscarSenha(usuarioId)
-	if erro != nil {
-		respostas.Erro(w, http.StatusInternalServerError, erro)
-		return
-	}
-
-	erro = seguranca.VerificarSenha(senha.Atual, senhaSalvanoBanco)
-	if erro != nil {
-		respostas.Erro(w, http.StatusUnauthorized, errors.New("A senha atual não condiz com as que esta salva no banco"))
-		return
-	}
-
-	senhaComHash, erro := seguranca.Hash(senha.Nova)
-	if erro != nil {
-		respostas.Erro(w, http.StatusBadRequest, erro)
-		return
-	}
-
-	erro = repositorio.AtualizarSenha(usuarioId, string(senhaComHash))
+	usecase := usecase.NovoUsuariosUseCase(repositorio)
+	erro = usecase.BuscarSenha(usuarioId, senha)
 	if erro != nil {
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return

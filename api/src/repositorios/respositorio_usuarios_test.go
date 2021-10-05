@@ -333,3 +333,325 @@ func TestBuscarPorEmail(t *testing.T) {
 	})
 
 }
+
+func TestSeguir(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("An Error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	usuario_id := uint64(1)
+	seguidor_id := uint64(2)
+
+	t.Run("success", func(t *testing.T) {
+
+		query := "insert ignore into seguidores(usuario_id, seguidor_id) value(?, ?)"
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id, seguidor_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.Seguir(usuario_id, seguidor_id)
+
+		assert.NoError(t, erro)
+	})
+
+	t.Run("erro-Exec", func(t *testing.T) {
+
+		query := "insert ignore into seguidores(usuario_id, seguidor_id) value(?, ?)"
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.Seguir(usuario_id, seguidor_id)
+
+		assert.Error(t, erro)
+	})
+
+	t.Run("erro-Prepare", func(t *testing.T) {
+
+		query := ""
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id, seguidor_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.Seguir(usuario_id, seguidor_id)
+
+		assert.Error(t, erro)
+	})
+}
+
+func TestParaDeSeguir(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	defer db.Close()
+
+	usuario_id := uint64(1)
+	seguidor_id := uint64(2)
+
+	t.Run("success", func(t *testing.T) {
+		query := `delete from seguidores where usuario_id = ? and seguidor_id = ?`
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id, seguidor_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.ParaDeSeguir(usuario_id, seguidor_id)
+
+		assert.NoError(t, erro)
+	})
+
+	t.Run("error-Exec", func(t *testing.T) {
+		query := `delete from seguidores where usuario_id = ? and seguidor_id = ?`
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.ParaDeSeguir(usuario_id, seguidor_id)
+
+		assert.Error(t, erro)
+	})
+
+	t.Run("error-Prepare", func(t *testing.T) {
+		query := ""
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(usuario_id, seguidor_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.ParaDeSeguir(usuario_id, seguidor_id)
+
+		assert.Error(t, erro)
+	})
+}
+
+func TestBuscarSeguidores(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	rows := sqlmock.NewRows([]string{"id", "nome", "nick", "email", "criadoEm"}).
+		AddRow(
+			mockUsuario.ID,
+			mockUsuario.Nome,
+			mockUsuario.Nick,
+			mockUsuario.Email,
+			mockUsuario.CriadoEm,
+		)
+
+	t.Run("success", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := `select u.id, u.nome, u.nick,  u.email, u.criadoEm
+		          from usuarios as u 
+		          inner join seguidores as s on u.id = s.seguidor_id 
+				  where s.usuario_id = ?`
+
+		mock.ExpectQuery(query).WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscarSeguidores(usuario_id)
+
+		assert.NotEmpty(t, usuarios)
+		assert.NoError(t, erro)
+	})
+
+	t.Run("error-Scan", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		rows := sqlmock.NewRows([]string{"id", "nome", "nick", "email", "criadoEm"}).
+			AddRow(
+				"error-forjado",
+				mockUsuario.Nome,
+				mockUsuario.Nick,
+				mockUsuario.Email,
+				mockUsuario.CriadoEm,
+			)
+
+		query := `select u.id, u.nome, u.nick,  u.email, u.criadoEm
+		          from usuarios as u 
+		          inner join seguidores as s on u.id = s.seguidor_id 
+				  where s.usuario_id = ?`
+
+		mock.ExpectQuery(query).WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscarSeguidores(usuario_id)
+
+		assert.Empty(t, usuarios)
+		assert.Error(t, erro)
+	})
+
+	t.Run("error-Query", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := ""
+
+		mock.ExpectQuery(query).WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscarSeguidores(usuario_id)
+
+		assert.Empty(t, usuarios)
+		assert.Error(t, erro)
+	})
+
+}
+
+func TestBuscarQuemSegue(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	rows := sqlmock.NewRows([]string{"id", "nome", "nick", "email", "criadoEm"}).
+		AddRow(
+			mockUsuario.ID,
+			mockUsuario.Nome,
+			mockUsuario.Nick,
+			mockUsuario.Email,
+			mockUsuario.CriadoEm,
+		)
+	t.Run("succes", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := "select u.id, u.nome, u.nick, u.email, u.criadoEm from usuarios u inner join seguidores s on u.id = s.usuario_id where seguidor_id =?"
+
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectQuery().WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscaQuemSegue(usuario_id)
+
+		assert.NotEmpty(t, usuarios)
+		assert.Nil(t, erro)
+	})
+
+	t.Run("error-Scan", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		rows := sqlmock.NewRows([]string{"id", "nome", "nick", "email", "criadoEm"}).
+			AddRow(
+				"erro-forjado",
+				mockUsuario.Nome,
+				mockUsuario.Nick,
+				mockUsuario.Email,
+				mockUsuario.CriadoEm,
+			)
+
+		query := "select u.id, u.nome, u.nick, u.email, u.criadoEm from usuarios u inner join seguidores s on u.id = s.usuario_id where seguidor_id =?"
+
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectQuery().WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscaQuemSegue(usuario_id)
+
+		assert.Empty(t, usuarios)
+		assert.NotNil(t, erro)
+	})
+
+	t.Run("error-query", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := "select u.id, u.nome, u.nick, u.email, u.criadoEm from usuarios u inner join seguidores s on u.id = s.usuario_id where seguidor_id =?"
+
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectQuery().WithArgs("").WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscaQuemSegue(usuario_id)
+
+		assert.Empty(t, usuarios)
+		assert.NotNil(t, erro)
+	})
+
+	t.Run("error-Prepare", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := ""
+
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectQuery().WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		usuarios, erro := repositorio.BuscaQuemSegue(usuario_id)
+
+		assert.Empty(t, usuarios)
+		assert.NotNil(t, erro)
+	})
+}
+
+func TestBuscarSenha(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	rows := sqlmock.NewRows([]string{"senha"}).
+		AddRow(
+			mockUsuario.Senha,
+		)
+
+	t.Run("success", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := "select senha from usuarios where id = ?"
+
+		mock.ExpectQuery(query).WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		senha, erro := repositorio.BuscarSenha(usuario_id)
+
+		assert.NotEmpty(t, senha)
+		assert.NoError(t, erro)
+		assert.Equal(t, senha, mockUsuario.Senha)
+	})
+
+	t.Run("error-Query", func(t *testing.T) {
+		usuario_id := uint64(1)
+
+		query := ""
+
+		mock.ExpectQuery(query).WithArgs(usuario_id).WillReturnRows(rows)
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		senha, erro := repositorio.BuscarSenha(usuario_id)
+
+		assert.Error(t, erro)
+		assert.Empty(t, senha)
+	})
+}
+
+func TestAtualizarSenha(t *testing.T) {
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	usuario_id := uint64(1)
+
+	t.Run("sucess", func(t *testing.T) {
+
+		query := "update usuarios set senha = ? where id = ?"
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(mockUsuario.Senha, usuario_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.AtualizarSenha(usuario_id, mockUsuario.Senha)
+
+		assert.NoError(t, erro)
+	})
+
+	t.Run("error-Exec", func(t *testing.T) {
+
+		query := "update usuarios set senha = ? where id = ?"
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(mockUsuario.Senha).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.AtualizarSenha(usuario_id, mockUsuario.Senha)
+
+		assert.Error(t, erro)
+	})
+
+	t.Run("error-Prepare", func(t *testing.T) {
+
+		query := ""
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(mockUsuario.Senha, usuario_id).WillReturnResult(sqlmock.NewResult(1, 1))
+		repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+		erro := repositorio.AtualizarSenha(usuario_id, mockUsuario.Senha)
+
+		assert.Error(t, erro)
+	})
+}
