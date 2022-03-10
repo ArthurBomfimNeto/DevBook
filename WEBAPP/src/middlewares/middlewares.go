@@ -1,7 +1,6 @@
 package middlewarer
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"webapp/src/cookies"
@@ -19,8 +18,8 @@ func Logger(proximaFuncao http.HandlerFunc) http.HandlerFunc {
 func Autenticar(proximaFuncao http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Caso der erro de não conter o cookie ele redireciona para o login
-		valores, erro := cookies.Ler(r)
-		fmt.Println(valores, erro)
+		_, erro := cookies.Ler(r)
+		//fmt.Println(valores, erro)
 		if erro != nil {
 			http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 			return

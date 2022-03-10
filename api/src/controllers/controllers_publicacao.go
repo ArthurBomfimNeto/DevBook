@@ -8,8 +8,8 @@ import (
 	respostas "api/src/resposta"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -23,11 +23,15 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println(r.Body)
+
 	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
+
+	log.Println(corpoRequisicao)
 
 	var publicacao modelos.Publicacao
 
@@ -36,6 +40,13 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusBadRequest, erro)
 		return
 	}
+
+	log.Println(publicacao)
+
+	// var publicacao modelos.Publicacao
+
+	// publicacao.Conteudo = r.FormValue("titulo")
+	// publicacao.Titulo = r.FormValue("conteudo")
 
 	db, erro := banco.Conectar()
 	if erro != nil {
@@ -54,7 +65,6 @@ func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
 	repositorio := repositorios.NovoRepositorioDePublicacao(db)
 	publicacao.ID, erro = repositorio.CriarPublicacao(publicacao)
 	if erro != nil {
-		fmt.Println("ENTROU")
 		respostas.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}

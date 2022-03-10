@@ -230,6 +230,7 @@ func (repositorio usuarios) BuscaQuemSegue(usuarioId uint64) ([]modelos.Usuario,
 			&usuario.Email,
 			&usuario.CriadoEm,
 		)
+
 		if erro != nil {
 			return []modelos.Usuario{}, erro
 		}
