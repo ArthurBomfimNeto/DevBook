@@ -5,7 +5,7 @@ import (
 	"webapp/src/controllers"
 )
 
-var RotasLogin = []Rota{
+var rotasLogin = []Rota{
 	{
 		URI:                "/",
 		Metodo:             http.MethodGet,
@@ -16,12 +16,6 @@ var RotasLogin = []Rota{
 		URI:                "/login",
 		Metodo:             http.MethodGet,
 		Funcao:             controllers.CarregarTelaDeLogin,
-		RequerAutenticacao: false,
-	},
-	{
-		URI:                "/login",
-		Metodo:             http.MethodPost,
-		Funcao:             controllers.FazerLogin,
 		RequerAutenticacao: false,
 	},
 }

@@ -7,9 +7,10 @@ import (
 
 var templates *template.Template
 
-//CarregarTemplates insere os templates html na variavel templates
-func CarregarTemplates() {
-	templates = template.Must(template.ParseGlob("views/*.html")) // os arquivos que vão ser jogados dentro da variavel templates são todos com extensão .html
+// Carregar templates insere os templates html na variavel templates
+func CarrregarTemplates() {
+	// templates recebe todos os arquivos com extenção .html
+	templates = template.Must(template.ParseGlob("views/*.html"))
 }
 
 func ExecutarTemplate(w http.ResponseWriter, template string, dados interface{}) {

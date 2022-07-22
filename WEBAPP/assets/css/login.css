@@ -1,23 +1,26 @@
+/*reflete para toda a pagina*/
 * {
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
     font-family: Georgia, 'Times New Roman', Times, serif;
-}
+};
 
 a {
     font-size: 16px;
     color: #3b5998;
     line-height: 1.4;
+        text-align: center;
+
 }
 
-a:hover { /*hover quando mouse passa em cima*/
-    text-decoration: none; /*tira o sublinhado*/
+a:hover {
+    text-decoration: none;
 }
 
 input {
     outline: none;
-    border:none;
+    border: none;
     color: #3b5998;
     line-height: 1.2;
     font-size: 18px;
@@ -25,14 +28,13 @@ input {
     width: 100%;
     background: transparent;
     height: 62px;
-    padding: 0 20px 0 30px;
+    padding: 0 20px 0 38px;
+}
+input::placeholder{
+    color: grey;
 }
 
-input::placeholder {
-    color: #8f8fa1;
-}
-
-.container-login { /*classe da div principal*/
+.container-login {
     width: 100%;
     min-height: 100vh;
     display: flex;
@@ -42,9 +44,9 @@ input::placeholder {
     padding: 15px;
 }
 
-.container-login > div { /* estiliza as div que contem dentro da classe container-login*/
+.container-login > div {
     width: 390px;
-    background: #fff;
+    background: white;
     border-radius: 10px;
     position: relative;
     padding: 50px 0 90px 0;
@@ -52,13 +54,14 @@ input::placeholder {
 
 .devbook-form > span {
     font-size: 30px;
-    color: #3b5998;
+    color:#3b5998;
     line-height: 1.2;
     text-align: center;
     width: 100%;
     display: block;
     padding-bottom: 30px;
 }
+
 
 .devbook-form > div {
     width: 100%;
@@ -73,15 +76,15 @@ input::placeholder {
     font-size: 16px;
     color: #fff;
     line-height: 1.2;
-    padding: 0 20px;
+    margin-top: 5px;
+    padding: 0px 20px;
     width: 100%;
     height: 62px;
-    background-color: #3b5998 ;
+    background-color: #3b5998;
     outline: none;
     border: none;
-    margin-top: 10px;
 }
-
 .btn-devbook:hover {
     cursor: pointer;
+    background-color: #3b4998;
 }

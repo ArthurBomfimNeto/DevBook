@@ -2,7 +2,6 @@ package rotas
 
 import (
 	"net/http"
-	middlewarer "webapp/src/middlewares"
 
 	"github.com/gorilla/mux"
 )
@@ -10,30 +9,20 @@ import (
 type Rota struct {
 	URI                string
 	Metodo             string
-	Funcao             func(w http.ResponseWriter, r *http.Request)
+	Funcao             func(http.ResponseWriter, *http.Request)
 	RequerAutenticacao bool
 }
 
-//Configurar cria todas as rotas e retorna elas
+// Configurar coloca todas as rotas dentro do router
 func Configurar(router *mux.Router) *mux.Router {
-	rotas := RotasLogin
-	rotas = append(rotas, rotasUsuarios...)
-	rotas = append(rotas, RotasHome)
+	rotas := rotasLogin
 
 	for _, rota := range rotas {
-		if rota.RequerAutenticacao {
-			router.HandleFunc(rota.URI,
-				middlewarer.Logger(middlewarer.Autenticar(rota.Funcao)),
-			).Methods(rota.Metodo)
-		} else {
-			router.HandleFunc(rota.URI,
-				middlewarer.Logger(rota.Funcao),
-			).Methods(rota.Metodo)
-		}
-
+		router.HandleFunc(rota.URI, rota.Funcao).Methods(rota.Metodo)
 	}
 
-	fileServer := http.FileServer(http.Dir("./assets/")) //
+	// Vai apontar para o go onde estão os arquivos css e js
+	fileServer := http.FileServer(http.Dir("./assets/"))
 	router.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", fileServer))
 
 	return router
